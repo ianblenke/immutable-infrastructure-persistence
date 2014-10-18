@@ -10,7 +10,7 @@ controls: true
 
 ### Immutable Infrastructure Persistence
 #### 12factor, Docker, PaaS (Dokku/Deis), and Fleet
-## Ian Blenke @ianblenke <ian@blenke.com> github.com/ianblenke
+## Ian Blenke @ianblenke
 ## ![http://goo.gl/fkHHRA](http://goo.gl/fkHHRA.qr)
 ## http://goo.gl/fkHHRA
 
@@ -246,8 +246,9 @@ Even with chef provisioned "always on" servers, persistence is not guaranteed, n
 
 ### Any questions? Comments?
 
-## Ian Blenke
+## Ian Blenke [@ianblenke](http://twitter.com/ianblenke)
 ## email: ian at blenke.com
-## [@ianblenke](http://twitter.com/ianblenke)
 ## github.com/ianblenke
+## ![http://goo.gl/fkHHRA](http://goo.gl/fkHHRA.qr)
+## This presentation: http://goo.gl/fkHHRA
 
