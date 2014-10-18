@@ -1,0 +1,845 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Immutable Infrastructure Persistence</title>
+  <style type="text/css">
+    body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #222;
+  background-color: #f7f7f7;
+  font-size: 100%;
+}
+
+.slide {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 0; right: 0;
+}
+
+.slide-content {
+  width: 800px;
+  height: 600px;
+  overflow: hidden;
+  margin: 80px auto 0 auto;
+  padding: 30px;
+
+  font-weight: 200;
+  font-size: 200%;
+  line-height: 1.375;
+}
+
+.controls {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+}
+
+.arrow {
+  width: 0; height: 0;
+  border: 30px solid #333;
+  float: left;
+  margin-right: 30px;
+
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.prev {
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+
+  border-left-width: 0;
+  border-right-width: 50px;
+}
+
+.next {
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  border-right-color: transparent;
+
+  border-left-width: 50px;
+  border-right-width: 0;
+}
+
+.prev:hover {
+  border-right-color: #888;
+  cursor: pointer;
+}
+
+.next:hover {
+  border-left-color: #888;
+  cursor: pointer;
+}
+
+h1 {
+  font-size: 300%;
+  line-height: 1.2;
+  text-align: center;
+  margin: 170px 0 0;
+}
+
+h2 {
+  font-size: 100%;
+  line-height: 1.2;
+  margin: 5px 0;
+  text-align: center;
+  font-weight: 200;
+}
+
+h3 {
+  font-size: 140%;
+  line-height: 1.2;
+  border-bottom: 1px solid #aaa;
+  margin: 0;
+  padding-bottom: 15px;
+}
+
+ul {
+  padding: 20px 0 0 60px;
+  font-weight: 200;
+  line-height: 1.375;
+}
+
+.author h1 {
+  font-size: 170%;
+  font-weight: 200;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.author h3 {
+  font-weight: 100;
+  text-align: center;
+  font-size: 95%;
+  border: none;
+}
+
+a {
+  text-decoration: none;
+  color: #44a4dd;
+}
+
+a:hover {
+  color: #66b5ff;
+}
+
+pre {
+  font-size: 60%;
+  line-height: 1.3;
+}
+
+.progress {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+
+.progress-bar {
+  width: 0%;
+  height: 3px;
+  background-color: #b4b4b4;
+
+  -webkit-transition: width 0.05s ease-out;
+  -moz-transition: width 0.05s ease-out;
+  -o-transition: width 0.05s ease-out;
+  transition: width 0.05s ease-out;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 850px) {
+
+  body {
+    font-size: 70%;
+  }
+
+  .slide-content {
+    width: auto;
+  }
+
+  img {
+    width: 100%;
+  }
+
+  h1 {
+    margin-top: 120px;
+  }
+
+  .prev, .prev:hover {
+    border-right-color: rgba(135, 135, 135, 0.5);
+  }
+
+  .next, .next:hover {
+    border-left-color: rgba(135, 135, 135, 0.5);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 50%;
+    overflow: hidden;
+  }
+
+  .slide-content {
+    padding: 10px;
+    margin-top: 10px;
+    height: 340px;
+  }
+
+  h1 {
+    margin-top: 50px;
+  }
+
+  ul {
+    padding-left: 25px;
+  }
+}
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact;
+  }
+
+  @page {
+    size: letter;
+  }
+
+  .hidden {
+    display: inline;
+  }
+
+  html {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  body {
+    margin: 0 auto !important;
+    border: 0;
+    padding: 0;
+    float: none !important;
+    overflow: visible;
+    background: none !important;
+    font-size: 52%;
+  }
+
+  .progress, .controls {
+    display: none;
+  }
+
+  .slide {
+    position: static;
+  }
+
+  .slide-content {
+    border: 1px solid #222;
+    margin-top: 0;
+    margin-bottom: 40px;
+    height: 3.5in;
+    overflow: visible;
+  }
+
+  .slide:nth-child(even) {
+    /* 2 slides per page */
+    page-break-before: always;
+  }
+}
+
+/*
+github.com style (c) Vasily Polovnyov <vast@whiteants.net>
+*/
+
+code, pre {
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  overflow: auto;
+  padding: 6px 10px;
+}
+
+code {
+  padding: 0 5px;
+}
+
+pre>code {
+  margin: 0; padding: 0;
+  border: none;
+  background: transparent;
+}
+
+pre .comment,
+pre .template_comment,
+pre .diff .header,
+pre .javadoc {
+  color: #998;
+  font-style: italic
+}
+
+pre .keyword,
+pre .css .rule .keyword,
+pre .winutils,
+pre .javascript .title,
+pre .nginx .title,
+pre .subst,
+pre .request,
+pre .status {
+  color: #333;
+  font-weight: bold
+}
+
+pre .number,
+pre .hexcolor,
+pre .ruby .constant {
+  color: #099;
+}
+
+pre .string,
+pre .tag .value,
+pre .phpdoc,
+pre .tex .formula {
+  color: #d14
+}
+
+pre .title,
+pre .id {
+  color: #900;
+  font-weight: bold
+}
+
+pre .javascript .title,
+pre .lisp .title,
+pre .clojure .title,
+pre .subst {
+  font-weight: normal
+}
+
+pre .class .title,
+pre .haskell .type,
+pre .vhdl .literal,
+pre .tex .command {
+  color: #458;
+  font-weight: bold
+}
+
+pre .tag,
+pre .tag .title,
+pre .rules .property,
+pre .django .tag .keyword {
+  color: #000080;
+  font-weight: normal
+}
+
+pre .attribute,
+pre .variable,
+pre .lisp .body {
+  color: #008080
+}
+
+pre .regexp {
+  color: #009926
+}
+
+pre .class {
+  color: #458;
+  font-weight: bold
+}
+
+pre .symbol,
+pre .ruby .symbol .string,
+pre .lisp .keyword,
+pre .tex .special,
+pre .prompt {
+  color: #990073
+}
+
+pre .built_in,
+pre .lisp .title,
+pre .clojure .built_in {
+  color: #0086b3
+}
+
+pre .preprocessor,
+pre .pi,
+pre .doctype,
+pre .shebang,
+pre .cdata {
+  color: #999;
+  font-weight: bold
+}
+
+pre .deletion {
+  background: #fdd
+}
+
+pre .addition {
+  background: #dfd
+}
+
+pre .diff .change {
+  background: #0086b3
+}
+
+pre .chunk {
+  color: #aaa
+}
+
+
+  </style>
+</head>
+<body>
+    <div class="progress">
+    <div class="progress-bar"></div>
+  </div>
+
+  <div class="slide" id="slide-1">
+    <section class="slide-content"><h3 id="immutable-infrastructure-persistence">Immutable Infrastructure Persistence</h3>
+<h4 id="12factor-docker-paas-dokku-deis-and-fleet">12factor, Docker, PaaS (Dokku/Deis), and Fleet</h4>
+<h2 id="ian-blenke-ianblenke-ian-blenke-com-">Ian Blenke @ianblenke <a href="&#x6d;&#x61;&#x69;&#108;&#x74;&#x6f;&#58;&#x69;&#x61;&#110;&#64;&#98;&#108;&#101;&#110;&#x6b;&#x65;&#x2e;&#99;&#111;&#109;">&#x69;&#x61;&#110;&#64;&#98;&#108;&#101;&#110;&#x6b;&#x65;&#x2e;&#99;&#111;&#109;</a></h2>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-2">
+    <section class="slide-content"><h3 id="persistence">Persistence</h3>
+<ul>
+<li>&quot;Bits on disk&quot;</li>
+<li>Reboot safely</li>
+<li>Consistency</li>
+<li>Availability</li>
+<li>Partitionability</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-3">
+    <section class="slide-content"><h3 id="immutable-infrastructure">Immutable Infrastructure</h3>
+<ul>
+<li>Golden <strong>Images</strong></li>
+<li>Running <strong>Containers</strong></li>
+<li>Temporary filesystem</li>
+<li>No Persistence</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-4">
+    <section class="slide-content"><h3 id="current-best-practice-">Current &quot;best practice&quot;</h3>
+<ul>
+<li>Separate Persistence layers from Immutable Infrastructure application deployment layers</li>
+<li>Manage Persistence layers with convergence tools<ul>
+<li>Chef</li>
+<li>Puppet</li>
+<li>Ansible</li>
+<li>SALT</li>
+<li>cfengine2</li>
+<li>cfengine/isconf/Makefiles...</li>
+</ul>
+</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-5">
+    <section class="slide-content"><h3 id="platform-as-a-service-paas-">Platform-as-a-Service (PaaS)</h3>
+<ul>
+<li>Dynamically scalable</li>
+<li>Rolling deploys</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-6">
+    <section class="slide-content"><h3 id="paas-examples">PaaS Examples</h3>
+<ul>
+<li>Heroku (git push, PaaS/SaaS)</li>
+<li>Dokku (git push, Docker, 100 lines of Bash!)</li>
+<li>Deis (git push, CoreOS/Fleet/Docker)</li>
+<li>OpenShift (git push, ProjectAtomic/Geard/Docker)</li>
+<li>CloudFoundry (command push, Warden and Mesos or Docker)</li>
+<li>Apache Stratos (Apache Mesos)</li>
+<li>Longshoreman (command push, Docker)</li>
+<li>Flynn</li>
+<li>Others</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-7">
+    <section class="slide-content"><h3 id="heroku-12factor-http-12factor-net-methodology">Heroku <a href="http://12factor.net">12factor</a> Methodology</h3>
+<ul>
+<li>Declarative formats automate and document</li>
+<li>Clean contract for containers</li>
+<li>Minimize divergence</li>
+<li>Scale with minimal tooling changes</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-8">
+    <section class="slide-content"><h3 id="heroku-deployment-model">Heroku deployment model</h3>
+<ul>
+<li>Heroku buildpacks<ul>
+<li>git project auto-detection</li>
+<li>dyno &quot;images&quot; compiled at deploy time</li>
+</ul>
+</li>
+<li>dyno &quot;workers&quot; run containerized images</li>
+<li>Environment variables for app settings</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-9">
+    <section class="slide-content"><h3 id="docker-contract-">Docker &quot;Contract&quot;</h3>
+<ul>
+<li>Images</li>
+<li>Volumes</li>
+<li>Ports</li>
+<li>Environment variables</li>
+<li>Links (NAME_TCP_5000_ADDR/NAME_TCP_5000_PORT)</li>
+<li>Containers</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-10">
+    <section class="slide-content"><h3 id="dokku-contract-">Dokku &quot;Contract&quot;</h3>
+<ul>
+<li>Same deploy model as Heroku</li>
+<li>Only 1 host</li>
+<li>progrium/buildstep generated docker images</li>
+<li>Very simple: 100 lines of bash</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-11">
+    <section class="slide-content"><h3 id="deis-contract-">Deis &quot;Contract&quot;</h3>
+<ul>
+<li>Same deploy model as Heroku</li>
+<li>etcd/systemd/fleet unit based deployment</li>
+<li>deisctl orchestrates unit deployment and deis upgrades</li>
+<li>deis command wraps user and application configuration</li>
+<li>docker images built by deis-builder during git push<ul>
+<li>progrium/buildstep generated slug wrapped in a slug runner</li>
+<li>include ENV metadata layers from application settings</li>
+</ul>
+</li>
+<li>Rolling version deployments</li>
+<li>per-application memory/cpu constraints</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-12">
+    <section class="slide-content"><h3 id="deis-fleet-units">Deis Fleet Units</h3>
+<ul>
+<li>deis-controller - django RESTful interface, coordinator</li>
+<li>deis-builder - slug builder</li>
+<li>deis-publisher - docker event relay</li>
+<li>deis-router - nginx reverse proxy</li>
+<li>deis-registry - docker private image repo</li>
+<li>deis-logger - &quot;deis logs&quot; collector and wrapper</li>
+<li>deis-database - postgresql + wal-e</li>
+<li>deis-store-gateway - ceph radosgw (S3)</li>
+<li>deis-store-daemon - ceph osd (storage)</li>
+<li>deis-store-monitor - ceph monitor</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-13">
+    <section class="slide-content"><h3 id="what-is-fleet-">What is Fleet?</h3>
+<ul>
+<li>Submits systemd units to member machines</li>
+<li>Part of the CoreOS project</li>
+<li>Written in go</li>
+<li>Built on etcd&#39;s RAFT/GOSSIP CAP theory clustering</li>
+<li>Allows for complex scheduling of units given constraints</li>
+<li>As of Fleet 0.8.0+, units can now be &quot;Global&quot; and automatically run on all member nodes</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-14">
+    <section class="slide-content"><h3 id="issues-with-fleet">Issues with Fleet</h3>
+<ul>
+<li>Dependency on systemd. <strong>Everyone loves systemd</strong></li>
+<li>Fleet versions younger than 0.7.4 or so get confused as to the actual state of the units</li>
+<li>Fleet versions younger than 0.8.3 have &quot;zombie units&quot; that cannot be killed</li>
+<li>Fleet 0.9.0 is promised to &quot;fairly&quot; spread units based on system load</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-15">
+    <section class="slide-content"><h3 id="issues-with-etcd">Issues with etcd</h3>
+<ul>
+<li>Disk latency currently causes flapping<h1 id="give-etcd-more-time-if-it-s-under-heavy-load-prevent-leader-election-thrashing">give etcd more time if it&#39;s under heavy load - prevent leader election thrashing</h1>
+  peer-election-timeout: 2000<h1 id="heartbeat-interval-should-ideally-be-1-4-or-1-5-of-peer-election-timeout">heartbeat interval should ideally be 1/4 or 1/5 of peer election timeout</h1>
+  peer-heartbeat-interval: 500</li>
+<li>Next major version of etcd will allow delayed writes</li>
+<li>Only 9 members will participate in leader election<ul>
+<li>If more than 4 of these are lost, quorum is lost, and etcd key/value store goes read-only</li>
+</ul>
+</li>
+<li>Hundreds of fleet nodes will hammer the master/leaders</li>
+<li>Automated node removal timer defaults to a week</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-16">
+    <section class="slide-content"><h3 id="issues-with-coreos">Issues with coreos</h3>
+<ul>
+<li>alpha/beta/stable</li>
+<li>Rapid upgrade cycles fixing issues with etcd/fleet</li>
+<li>btrfs volumes &quot;fill up&quot; yet still show space</li>
+<li>Upgrading coreos safely with locksmith and omaha protocol</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-17">
+    <section class="slide-content"><h3 id="other-example-fleet-units">Other Example Fleet Units</h3>
+<ul>
+<li><a href="https://github.com/ianblenke/coreos-vagrant-kitchen-sink">ianblenke/coreos-vagrant-kitchen-sink</a></li>
+<li>Vagrant CoreOS with self-orchestrated:<ul>
+<li>Flannel (VPN)</li>
+<li>Kubernetes (Google&#39;s YAML based orchestration)</li>
+<li>libswarm (Docker API reverse proxy)</li>
+<li>Panamax (YAML based orchestration with web interface)</li>
+<li>Kibana / Logstash / Logspout / ElasticSearch (Logging)</li>
+<li>Heapster, Grafana, Influxdb, cadvisor</li>
+<li>Galera MySQL</li>
+<li>Zookeeper</li>
+<li>Many others to come</li>
+</ul>
+</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-18">
+    <section class="slide-content"><h3 id="data-in-flight-">Data &quot;in flight&quot;</h3>
+<ul>
+<li>Horizontally scaled persistence layer</li>
+<li>Multiple availability zones to prevent quorum loss
+*</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-19">
+    <section class="slide-content"><h3 id="but-what-about-upgrades-">But what about upgrades?</h3>
+<ul>
+<li>Data volumes can contain metadata to allow the docker image to detect and upgrade storage</li>
+<li>A &quot;controller&quot; unit could be used to orchestrate upgrades transparently</li>
+<li>There is a strong need for automated orchestration &quot;distribution&quot;<ul>
+<li>Akin to the upgrade scripts in an distribution &quot;package&quot;</li>
+</ul>
+</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-20">
+    <section class="slide-content"><h3 id="is-this-persistence-safe-">Is this Persistence safe?</h3>
+<ul>
+<li>container volumes can be mounted from underlying host</li>
+<li>stopped &quot;data&quot; container volumes can be mounted from another</li>
+<li>Docker 1.20+ --restart=always flag</li>
+<li>Other experimental Docker image storage backends than AUFS and BTRFS do exist: ZFS, Hadoop, etc</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-21">
+    <section class="slide-content"><h3 id="other-risks">Other risks</h3>
+<ul>
+<li>Docker 172.17.42.0/24 &quot;hides&quot; containers between hosts (Flannel addresses this with a VPN)</li>
+<li>Shared nodes means:<ul>
+<li>IO saturation on persistence member nodes starving IO for other layers</li>
+<li>Only so many pre-defined ports available to be mapped</li>
+<li>Shared-tenancy deployment not advised - CoreOS fleets should be limited in scope</li>
+</ul>
+</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-22">
+    <section class="slide-content"><h3 id="real-world-example">Real world example</h3>
+<ul>
+<li>Chef provisioned i2.8xlarge postgres instances on 8 SSD <strong>ephemeral</strong> (not EBS+PIOPs!) disk RAID-10 arrays</li>
+<li>If stopped, the persistence is <em>gone</em></li>
+<li>The actual persistence safety provided by daily wal-e full backups and streaming wal-e archives to S3 storage</li>
+</ul>
+<p>Even with chef provisioned &quot;always on&quot; servers, persistence is not guaranteed, nor is it even necessary.</p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-23">
+    <section class="slide-content"><h3 id="any-questions-comments-">Any questions? Comments?</h3>
+<h2 id="ian-blenke">Ian Blenke</h2>
+<h2 id="email-ian-at-blenke-com">email: ian at blenke.com</h2>
+<h2 id="-ianblenke-http-twitter-com-ianblenke-"><a href="http://twitter.com/ianblenke">@ianblenke</a></h2>
+<h2 id="github-com-ianblenke">github.com/ianblenke</h2>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-24">
+    <section class="slide-content"><div class="author">
+  <h1 class="name">Ian Blenke</h1>
+    <h3 class="twitter">
+      <a href="http://twitter.com/@ianblenke">@ianblenke</a>
+    </h3>
+    <h3 class="url">
+      <a href="http://github.com/ianblenke/cleaver/immutable-infrastructure-persistence.md">http://github.com/ianblenke/cleaver/immutable-infrastructure-persistence.md</a>
+    </h3>
+</div>
+</section>
+  </div>
+
+  <div class="controls">
+    <div class="arrow prev"></div>
+    <div class="arrow next"></div>
+  </div>
+
+
+  <script type="text/javascript">
+    /**
+ * Returns the current page number of the presentation.
+ */
+function currentPosition() {
+  return parseInt(document.querySelector('.slide:not(.hidden)').id.slice(6));
+}
+
+
+/**
+ * Navigates forward n pages
+ * If n is negative, we will navigate in reverse
+ */
+function navigate(n) {
+  var position = currentPosition();
+  var numSlides = document.getElementsByClassName('slide').length;
+
+  /* Positions are 1-indexed, so we need to add and subtract 1 */
+  var nextPosition = (position - 1 + n) % numSlides + 1;
+
+  /* Normalize nextPosition in-case of a negative modulo result */
+  nextPosition = (nextPosition - 1 + numSlides) % numSlides + 1;
+
+  document.getElementById('slide-' + position).classList.add('hidden');
+  document.getElementById('slide-' + nextPosition).classList.remove('hidden');
+
+  updateProgress();
+  updateURL();
+  updateTabIndex();
+}
+
+
+/**
+ * Updates the current URL to include a hashtag of the current page number.
+ */
+function updateURL() {
+  window.history.replaceState({} , null, '#' + currentPosition());
+}
+
+
+/**
+ * Sets the progress indicator.
+ */
+function updateProgress() {
+  var progressBar = document.querySelector('.progress-bar');
+
+  if (progressBar !== null) {
+    var numSlides = document.getElementsByClassName('slide').length;
+    var position = currentPosition() - 1;
+    var percent = (numSlides === 1) ? 100 : 100 * position / (numSlides - 1);
+    progressBar.style.width = percent.toString() + '%';
+  }
+}
+
+
+/**
+ * Removes tabindex property from all links on the current slide, sets
+ * tabindex = -1 for all links on other slides. Prevents slides from appearing
+ * out of control.
+ */
+function updateTabIndex() {
+  var allLinks = document.querySelectorAll('.slide a');
+  var position = currentPosition();
+  var currentPageLinks = document.getElementById('slide-' + position).querySelectorAll('a');
+  var i;
+
+  for (i = 0; i < allLinks.length; i++) {
+    allLinks[i].setAttribute('tabindex', -1);
+  }
+
+  for (i = 0; i < currentPageLinks.length; i++) {
+    currentPageLinks[i].removeAttribute('tabindex');
+  }
+}
+
+/**
+ * Determines whether or not we are currently in full screen mode
+ */
+function isFullScreen() {
+  return document.fullscreenElement ||
+         document.mozFullScreenElement ||
+         document.webkitFullscreenElement ||
+         document.msFullscreenElement;
+}
+
+/**
+ * Toggle fullScreen mode on document element.
+ * Works on chrome (>= 15), firefox (>= 9), ie (>= 11), opera(>= 12.1), safari (>= 5).
+ */
+function toggleFullScreen() {
+  /* Convenient renames */
+  var docElem = document.documentElement;
+  var doc = document;
+
+  docElem.requestFullscreen =
+      docElem.requestFullscreen ||
+      docElem.msRequestFullscreen ||
+      docElem.mozRequestFullScreen ||
+      docElem.webkitRequestFullscreen.bind(docElem, Element.ALLOW_KEYBOARD_INPUT);
+
+  doc.exitFullscreen =
+      doc.exitFullscreen ||
+      doc.msExitFullscreen ||
+      doc.mozCancelFullScreen ||
+      doc.webkitExitFullscreen;
+
+  isFullScreen() ? doc.exitFullscreen() : docElem.requestFullscreen();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Update the tabindex to prevent weird slide transitioning
+  updateTabIndex();
+
+  // If the location hash specifies a page number, go to it.
+  var page = window.location.hash.slice(1);
+  if (page) {
+    navigate(parseInt(page) - 1);
+  }
+
+  document.onkeydown = function (e) {
+    var kc = e.keyCode;
+
+    // left, down, H, J, backspace, PgUp - BACK
+    // up, right, K, L, space, PgDn - FORWARD
+    // enter - FULLSCREEN
+    if (kc === 37 || kc === 40 || kc === 8 || kc === 72 || kc === 74 || kc === 33) {
+      navigate(-1);
+    } else if (kc === 38 || kc === 39 || kc === 32 || kc === 75 || kc === 76 || kc === 34) {
+      navigate(1);
+    } else if (kc === 13) {
+      toggleFullScreen();
+    }
+  };
+
+  if (document.querySelector('.next') && document.querySelector('.prev')) {
+    document.querySelector('.next').onclick = function (e) {
+      e.preventDefault();
+      navigate(1);
+    };
+
+    document.querySelector('.prev').onclick = function (e) {
+      e.preventDefault();
+      navigate(-1);
+    };
+  }
+});
+
+
+  </script>
+</body>
+</html>
