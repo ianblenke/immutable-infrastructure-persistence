@@ -413,9 +413,6 @@ pre .chunk {
 <ul>
 <li>&quot;Bits on disk&quot;</li>
 <li>Reboot safely</li>
-<li>Consistency</li>
-<li>Availability</li>
-<li>Partitionability</li>
 </ul>
 </section>
   </div>
@@ -446,14 +443,57 @@ pre .chunk {
 </section>
   </div>
   <div class="slide hidden" id="slide-5">
-    <section class="slide-content"><h3 id="platform-as-a-service-paas-">Platform-as-a-Service (PaaS)</h3>
+    <section class="slide-content"><h3 id="cap-theory-brewer-s-theorem-">CAP Theory (Brewer&#39;s Theorem)</h3>
 <ul>
-<li>Dynamically scalable</li>
-<li>Rolling deploys</li>
+<li>Consistency</li>
+<li>Availability</li>
+<li>Partition tolerance</li>
+</ul>
+<ul>
+<li>PAXOS</li>
+<li>RAFT</li>
+<li>GOSSIP</li>
 </ul>
 </section>
   </div>
   <div class="slide hidden" id="slide-6">
+    <section class="slide-content"><h3 id="cap-diagram">CAP Diagram</h3>
+<p><img src="venndiagram.png" alt="CAP Theorem Venn Diagram"></p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-7">
+    <section class="slide-content"><h3 id="metal-as-a-service-maas-">Metal-as-a-Service (MaaS)</h3>
+<ul>
+<li>Automated bootstrapping of new hardware</li>
+<li>Rack-and-stack servers</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-8">
+    <section class="slide-content"><h3 id="infrastructure-as-a-service-iaas-">Infrastructure-as-a-Service (IaaS)</h3>
+<ul>
+<li>Cloud APIs to carve up MaaS provisioned hardware</li>
+<li>Public, Private, or Hybrid</li>
+<li>AWS EC2 (Eucalyptus)</li>
+<li>OpenStack / Apache Cloudstack</li>
+<li>GCE</li>
+<li>Azure</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-9">
+    <section class="slide-content"><h3 id="platform-as-a-service-paas-">Platform-as-a-Service (PaaS)</h3>
+<ul>
+<li>Automated code deployment on IaaS provisioned platform</li>
+<li>&quot;Push&quot; based deployment</li>
+<li>Deployment images built on the fly from codebase</li>
+<li>Containers spun up automatically from built images</li>
+<li>Scale quickly in response to load</li>
+<li>Rolling version deploys</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-10">
     <section class="slide-content"><h3 id="paas-examples">PaaS Examples</h3>
 <ul>
 <li>Heroku (git push, PaaS/SaaS)</li>
@@ -468,7 +508,7 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-7">
+  <div class="slide hidden" id="slide-11">
     <section class="slide-content"><h3 id="heroku-12factor-http-12factor-net-methodology">Heroku <a href="http://12factor.net">12factor</a> Methodology</h3>
 <ul>
 <li>Declarative formats automate and document</li>
@@ -478,7 +518,7 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-8">
+  <div class="slide hidden" id="slide-12">
     <section class="slide-content"><h3 id="heroku-deployment-model">Heroku deployment model</h3>
 <ul>
 <li>Heroku buildpacks<ul>
@@ -491,7 +531,7 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-9">
+  <div class="slide hidden" id="slide-13">
     <section class="slide-content"><h3 id="docker">Docker</h3>
 <ul>
 <li>Images</li>
@@ -503,7 +543,7 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-10">
+  <div class="slide hidden" id="slide-14">
     <section class="slide-content"><h3 id="dokku-contract-">Dokku &quot;Contract&quot;</h3>
 <ul>
 <li>Same deploy model as Heroku</li>
@@ -513,7 +553,7 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-11">
+  <div class="slide hidden" id="slide-15">
     <section class="slide-content"><h3 id="deis-contract-">Deis &quot;Contract&quot;</h3>
 <ul>
 <li>Same deploy model as Heroku</li>
@@ -530,8 +570,8 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-12">
-    <section class="slide-content"><h3 id="deis-fleet-units">Deis Fleet Units</h3>
+  <div class="slide hidden" id="slide-16">
+    <section class="slide-content"><h3 id="deis-fleet-service-units">Deis Fleet Service Units</h3>
 <ul>
 <li>deis-controller - django RESTful interface, coordinator</li>
 <li>deis-builder - slug builder</li>
@@ -546,19 +586,76 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-13">
-    <section class="slide-content"><h3 id="what-is-fleet-">What is Fleet?</h3>
+  <div class="slide hidden" id="slide-17">
+    <section class="slide-content"><h3 id="what-are-service-units-">What are Service Units?</h3>
 <ul>
-<li>Submits systemd units to member machines</li>
+<li>systemd service definitions</li>
+<li>.ini file like syntax</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-18">
+    <section class="slide-content"><p>[Unit]
+    After=docker.service
+    ConditionFileIsExecutable=/tmp/logstash-create-fleet-units.sh
+    ConditionFileNotEmpty=/tmp/logstash@.service</p>
+<pre><code>[Service]
+ExecStart=/tmp/logstash-create-fleet-units.sh
+RemainAfterExit=no
+Type=oneshot</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-19">
+    <section class="slide-content"><h3 id="what-is-coreos-">What is CoreOS?</h3>
+<ul>
+<li>Bare bones pre-built images</li>
+<li>Gentoo fork, no portage</li>
+<li>NO COMPILER</li>
+<li>Self-updating using locksmith and omaha protocol</li>
+<li>Two partition &quot;failsafe&quot; upgrading</li>
+<li>Immutable root filesystem</li>
+<li>Need a tool? Run &quot;toolbox&quot;</li>
+<li>Everything is a container</li>
+<li>etcd / fleet / cloud-init &quot;user-data&quot;</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-20">
+    <section class="slide-content"><h3 id="what-is-etcd-">What is etcd?</h3>
+<ul>
 <li>Part of the CoreOS project</li>
 <li>Written in go</li>
+<li>CAP Theory key/value and membership clustering</li>
+<li>Implementation of RAFT and GOSSIP</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-21">
+    <section class="slide-content"><h3 id="what-is-fleet-">What is Fleet?</h3>
+<ul>
+<li>Part of the CoreOS project</li>
+<li>Written in go</li>
+<li>Submits systemd units to member machines</li>
 <li>Built on etcd&#39;s RAFT/GOSSIP CAP theory clustering</li>
 <li>Allows for complex scheduling of units given constraints</li>
 <li>As of Fleet 0.8.0+, units can now be &quot;Global&quot; and automatically run on all member nodes</li>
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-14">
+  <div class="slide hidden" id="slide-22">
+    <section class="slide-content"><h3 id="what-is-cloud-init-user-data-">What is cloud-init &quot;user-data&quot;?</h3>
+<ul>
+<li>YAML file</li>
+<li>Passed to CoreOS at boot time</li>
+<li>Describes etcd/fleet configurations</li>
+<li>Writes files</li>
+<li>Defines hostname</li>
+<li>Creates users</li>
+<li>Defines etcd service units</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-23">
     <section class="slide-content"><h3 id="issues-with-fleet">Issues with Fleet</h3>
 <ul>
 <li>Dependency on systemd. <strong>Everyone loves systemd</strong></li>
@@ -568,7 +665,7 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-15">
+  <div class="slide hidden" id="slide-24">
     <section class="slide-content"><h3 id="issues-with-etcd">Issues with etcd</h3>
 <ul>
 <li>Disk latency currently causes flapping<ul>
@@ -586,7 +683,7 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-16">
+  <div class="slide hidden" id="slide-25">
     <section class="slide-content"><h3 id="issues-with-coreos">Issues with coreos</h3>
 <ul>
 <li>alpha/beta/stable</li>
@@ -596,8 +693,8 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-17">
-    <section class="slide-content"><h3 id="other-example-fleet-units">Other Example Fleet Units</h3>
+  <div class="slide hidden" id="slide-26">
+    <section class="slide-content"><h3 id="example-fleet-units">Example Fleet Units</h3>
 <ul>
 <li><a href="https://github.com/ianblenke/coreos-vagrant-kitchen-sink">ianblenke/coreos-vagrant-kitchen-sink</a></li>
 <li>Vagrant CoreOS with self-orchestrated:<ul>
@@ -615,7 +712,7 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-18">
+  <div class="slide hidden" id="slide-27">
     <section class="slide-content"><h3 id="data-in-flight-">Data &quot;in flight&quot;</h3>
 <ul>
 <li>If containers are stopped, their volumes disappear<ul>
@@ -627,7 +724,7 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-19">
+  <div class="slide hidden" id="slide-28">
     <section class="slide-content"><h3 id="but-what-about-upgrades-">But what about upgrades?</h3>
 <ul>
 <li>Data volumes can contain metadata to allow the docker image to detect and upgrade storage</li>
@@ -640,7 +737,7 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-20">
+  <div class="slide hidden" id="slide-29">
     <section class="slide-content"><h3 id="is-this-persistence-safe-">Is this Persistence safe?</h3>
 <ul>
 <li>container volumes can be mounted from underlying host</li>
@@ -650,7 +747,7 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-21">
+  <div class="slide hidden" id="slide-30">
     <section class="slide-content"><h3 id="other-risks">Other risks</h3>
 <ul>
 <li>Docker 172.17.42.0/24 &quot;hides&quot; containers between hosts (Flannel addresses this with a VPN)</li>
@@ -663,7 +760,7 @@ pre .chunk {
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-22">
+  <div class="slide hidden" id="slide-31">
     <section class="slide-content"><h3 id="real-world-example">Real world example</h3>
 <ul>
 <li>Chef provisioned i2.8xlarge postgres instances on 8 SSD <strong>ephemeral</strong> (not EBS+PIOPs!) disk RAID-10 arrays</li>
@@ -673,7 +770,15 @@ pre .chunk {
 <p>Even with chef provisioned &quot;always on&quot; servers, persistence is not guaranteed, nor is it even necessary.</p>
 </section>
   </div>
-  <div class="slide hidden" id="slide-23">
+  <div class="slide hidden" id="slide-32">
+    <section class="slide-content"><h3 id="related-topics">Related topics</h3>
+<ul>
+<li>Continuous Integration (CI)</li>
+<li>Continuous Delivery (CD)</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-33">
     <section class="slide-content"><h3 id="any-questions-comments-">Any questions? Comments?</h3>
 <h2 id="ian-blenke-ianblenke-http-twitter-com-ianblenke-">Ian Blenke <a href="http://twitter.com/ianblenke">@ianblenke</a></h2>
 <h2 id="email-ian-at-blenke-com">email: ian at blenke.com</h2>
@@ -682,7 +787,7 @@ pre .chunk {
 <h2 id="this-presentation-http-goo-gl-fkhhra">This presentation: <a href="http://goo.gl/fkHHRA">http://goo.gl/fkHHRA</a></h2>
 </section>
   </div>
-  <div class="slide hidden" id="slide-24">
+  <div class="slide hidden" id="slide-34">
     <section class="slide-content"><div class="author">
   <h1 class="name">Ian Blenke</h1>
     <h3 class="twitter">

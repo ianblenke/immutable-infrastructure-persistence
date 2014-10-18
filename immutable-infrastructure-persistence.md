@@ -20,9 +20,6 @@ controls: true
 
 * "Bits on disk"
 * Reboot safely
-* Consistency
-* Availability
-* Partitionability
 
 --
 
@@ -48,10 +45,51 @@ controls: true
 
 --
 
+### CAP Theory (Brewer's Theorem)
+
+* Consistency
+* Availability
+* Partition tolerance
+
+
+* PAXOS
+* RAFT
+* GOSSIP
+
+--
+
+### CAP Diagram
+
+![CAP Theorem Venn Diagram](venndiagram.png)
+
+--
+
+### Metal-as-a-Service (MaaS)
+
+* Automated bootstrapping of new hardware
+* Rack-and-stack servers
+
+--
+
+### Infrastructure-as-a-Service (IaaS)
+
+* Cloud APIs to carve up MaaS provisioned hardware
+* Public, Private, or Hybrid
+* AWS EC2 (Eucalyptus)
+* OpenStack / Apache Cloudstack
+* GCE
+* Azure
+
+--
+
 ### Platform-as-a-Service (PaaS)
 
-* Dynamically scalable
-* Rolling deploys
+* Automated code deployment on IaaS provisioned platform
+* "Push" based deployment
+* Deployment images built on the fly from codebase
+* Containers spun up automatically from built images
+* Scale quickly in response to load
+* Rolling version deploys
 
 --
 
@@ -99,7 +137,6 @@ controls: true
 
 --
 
-
 ### Dokku "Contract"
 
 * Same deploy model as Heroku
@@ -123,7 +160,7 @@ controls: true
 
 --
 
-### Deis Fleet Units
+### Deis Fleet Service Units
 
 * deis-controller - django RESTful interface, coordinator
 * deis-builder - slug builder
@@ -138,14 +175,68 @@ controls: true
 
 --
 
-### What is Fleet?
+### What are Service Units?
 
-* Submits systemd units to member machines
+* systemd service definitions
+* .ini file like syntax
+
+--
+
+    [Unit]
+    After=docker.service
+    ConditionFileIsExecutable=/tmp/logstash-create-fleet-units.sh
+    ConditionFileNotEmpty=/tmp/logstash@.service
+
+    [Service]
+    ExecStart=/tmp/logstash-create-fleet-units.sh
+    RemainAfterExit=no
+    Type=oneshot
+
+--
+
+### What is CoreOS?
+
+* Bare bones pre-built images
+* Gentoo fork, no portage
+* NO COMPILER
+* Self-updating using locksmith and omaha protocol
+* Two partition "failsafe" upgrading
+* Immutable root filesystem
+* Need a tool? Run "toolbox"
+* Everything is a container
+* etcd / fleet / cloud-init "user-data"
+
+--
+
+### What is etcd?
+
 * Part of the CoreOS project
 * Written in go
+* CAP Theory key/value and membership clustering
+* Implementation of RAFT and GOSSIP
+
+--
+
+### What is Fleet?
+
+* Part of the CoreOS project
+* Written in go
+* Submits systemd units to member machines
 * Built on etcd's RAFT/GOSSIP CAP theory clustering
 * Allows for complex scheduling of units given constraints
 * As of Fleet 0.8.0+, units can now be "Global" and automatically run on all member nodes
+
+--
+
+### What is cloud-init "user-data"?
+
+* YAML file
+* Passed to CoreOS at boot time
+* Describes etcd/fleet configurations
+* Writes files
+* Defines hostname
+* Creates users
+* Defines etcd service units
 
 --
 
@@ -180,7 +271,7 @@ controls: true
 
 --
 
-### Other Example Fleet Units
+### Example Fleet Units
 
 * [ianblenke/coreos-vagrant-kitchen-sink](https://github.com/ianblenke/coreos-vagrant-kitchen-sink)
 * Vagrant CoreOS with self-orchestrated:
@@ -241,6 +332,13 @@ controls: true
 * The actual persistence safety provided by daily wal-e full backups and streaming wal-e archives to S3 storage
 
 Even with chef provisioned "always on" servers, persistence is not guaranteed, nor is it even necessary.
+
+--
+
+### Related topics
+
+* Continuous Integration (CI)
+* Continuous Delivery (CD)
 
 --
 
