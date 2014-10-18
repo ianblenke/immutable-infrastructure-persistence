@@ -2,7 +2,7 @@ title: Immutable Infrastructure Persistence
 author:
   name: Ian Blenke
   twitter: ianblenke
-  url: http://github.com/ianblenke/cleaver/immutable-infrastructure-persistence.md
+  url: http://github.com/ianblenke/immutable-infrastructure-persistence
 output: index.html
 controls: true
 
