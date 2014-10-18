@@ -458,7 +458,7 @@ pre .chunk {
   </div>
   <div class="slide hidden" id="slide-6">
     <section class="slide-content"><h3 id="cap-diagram">CAP Diagram</h3>
-<p><img src="venndiagram.png" alt="CAP Theorem Venn Diagram"></p>
+<p><img src="images/venndiagram-transparent.png" alt="CAP Theorem Venn Diagram"></p>
 </section>
   </div>
   <div class="slide hidden" id="slide-7">
@@ -467,6 +467,7 @@ pre .chunk {
 <li>Automated bootstrapping of new hardware</li>
 <li>Rack-and-stack servers</li>
 </ul>
+<p><img src="images/heresourcloud.jpg" alt="Here&#39;s our cloud"></p>
 </section>
   </div>
   <div class="slide hidden" id="slide-8">
@@ -592,15 +593,19 @@ pre .chunk {
 <li>systemd service definitions</li>
 <li>.ini file like syntax</li>
 </ul>
+<h3 id="-automation-images-automation-small-png-"><img src="images/automation-small.png" alt="Automation"></h3>
 </section>
   </div>
   <div class="slide hidden" id="slide-18">
-    <section class="slide-content"><p>[Unit]
-    After=docker.service
-    ConditionFileIsExecutable=/tmp/logstash-create-fleet-units.sh
-    ConditionFileNotEmpty=/tmp/logstash@.service</p>
-<pre><code>[Service]
-ExecStart=/tmp/logstash-create-fleet-units.sh
+    <section class="slide-content"><h3 id="an-example-unit-">An example unit:</h3>
+<pre><code>[Unit]
+After=docker.service
+
+[Service]
+ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-download.service
+ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-proxy.service
+ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-kubelet.service
+ExecStart=/usr/bin/bash -c &quot;[ \&quot;$(etcdctl get /_coreos.com/fleet/machines/$(etcdctl get /_coreos.com/fleet/lease/engine-leader)/object | sed -e &#39;s/^.*PublicIP\\\&quot;:\\\&quot;//&#39; -e &#39;s/\\\&quot;.*$//&#39;)&quot; = \&quot;${COREOS_PRIVATE_IPV4}\&quot; ] &amp;&amp; /usr/bin/fleetctl start /run/fleet/units/kubernetes-master.service &amp;&amp; ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-controller.service&quot;
 RemainAfterExit=no
 Type=oneshot</code></pre>
 </section>
@@ -745,6 +750,7 @@ Type=oneshot</code></pre>
 <li>Docker 1.20+ --restart=always flag</li>
 <li>Other experimental Docker image storage backends than AUFS and BTRFS do exist: ZFS, Hadoop, etc</li>
 </ul>
+<p><img src="images/shitsonfireyo.jpg" alt="Shit&#39;s on fire, yo"></p>
 </section>
   </div>
   <div class="slide hidden" id="slide-30">

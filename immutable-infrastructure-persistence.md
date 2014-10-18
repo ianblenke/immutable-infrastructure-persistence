@@ -60,7 +60,7 @@ controls: true
 
 ### CAP Diagram
 
-![CAP Theorem Venn Diagram](venndiagram.png)
+![CAP Theorem Venn Diagram](images/venndiagram-transparent.png)
 
 --
 
@@ -68,6 +68,8 @@ controls: true
 
 * Automated bootstrapping of new hardware
 * Rack-and-stack servers
+
+![Here's our cloud](images/heresourcloud.jpg)
 
 --
 
@@ -180,18 +182,21 @@ controls: true
 * systemd service definitions
 * .ini file like syntax
 
+### ![Automation](images/automation-small.png)
+
 --
+### An example unit:
 
     [Unit]
     After=docker.service
-    ConditionFileIsExecutable=/tmp/logstash-create-fleet-units.sh
-    ConditionFileNotEmpty=/tmp/logstash@.service
 
     [Service]
-    ExecStart=/tmp/logstash-create-fleet-units.sh
+    ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-download.service
+    ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-proxy.service
+    ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-kubelet.service
+    ExecStart=/usr/bin/bash -c "[ \"$(etcdctl get /_coreos.com/fleet/machines/$(etcdctl get /_coreos.com/fleet/lease/engine-leader)/object | sed -e 's/^.*PublicIP\\\":\\\"//' -e 's/\\\".*$//')" = \"${COREOS_PRIVATE_IPV4}\" ] && /usr/bin/fleetctl start /run/fleet/units/kubernetes-master.service && ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-controller.service"
     RemainAfterExit=no
     Type=oneshot
-
 --
 
 ### What is CoreOS?
@@ -312,6 +317,8 @@ controls: true
 * stopped "data" container volumes can be mounted from another
 * Docker 1.20+ --restart=always flag
 * Other experimental Docker image storage backends than AUFS and BTRFS do exist: ZFS, Hadoop, etc
+
+![Shit's on fire, yo](images/shitsonfireyo.jpg)
 
 --
 
