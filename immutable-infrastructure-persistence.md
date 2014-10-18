@@ -10,7 +10,7 @@ controls: true
 
 ### Immutable Infrastructure Persistence
 #### 12factor, Docker, PaaS (Dokku/Deis), and Fleet
-## Ian Blenke @ianblenke <ian@blenke.com>
+## Ian Blenke @ianblenke <ian@blenke.com> github.com/ianblenke
 
 --
 
