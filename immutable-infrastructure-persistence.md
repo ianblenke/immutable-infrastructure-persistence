@@ -2,7 +2,7 @@ title: Immutable Infrastructure Persistence
 author:
   name: Ian Blenke
   twitter: ianblenke
-  url: http://github.com/ianblenke/immutable-infrastructure-persistence
+  url: http://ianblenke.github.io/immutable-infrastructure-persistence
 output: index.html
 controls: true
 
@@ -11,6 +11,8 @@ controls: true
 ### Immutable Infrastructure Persistence
 #### 12factor, Docker, PaaS (Dokku/Deis), and Fleet
 ## Ian Blenke @ianblenke <ian@blenke.com> github.com/ianblenke
+## ![http://goo.gl/fkHHRA](http://goo.gl/fkHHRA.qr)
+## http://goo.gl/fkHHRA
 
 --
 
@@ -86,7 +88,7 @@ controls: true
 
 --
 
-### Docker "Contract"
+### Docker
 
 * Images
 * Volumes
@@ -159,10 +161,8 @@ controls: true
 ### Issues with etcd
 
 * Disk latency currently causes flapping
-    # give etcd more time if it's under heavy load - prevent leader election thrashing
-    peer-election-timeout: 2000
-    # heartbeat interval should ideally be 1/4 or 1/5 of peer election timeout
-    peer-heartbeat-interval: 500
+  * **peer-election-timeout: 2000**
+  * **peer-heartbeat-interval: 500**
 * Next major version of etcd will allow delayed writes
 * Only 9 members will participate in leader election
   * If more than 4 of these are lost, quorum is lost, and etcd key/value store goes read-only
@@ -185,10 +185,10 @@ controls: true
 * [ianblenke/coreos-vagrant-kitchen-sink](https://github.com/ianblenke/coreos-vagrant-kitchen-sink)
 * Vagrant CoreOS with self-orchestrated:
   * Flannel (VPN)
-  * Kubernetes (Google's YAML based orchestration)
+  * Kubernetes (YAML based orchestration)
   * libswarm (Docker API reverse proxy)
-  * Panamax (YAML based orchestration with web interface)
-  * Kibana / Logstash / Logspout / ElasticSearch (Logging)
+  * Panamax (YAML/web based orchestration)
+  * Kibana, Logstash, Logspout, ElasticSearch
   * Heapster, Grafana, Influxdb, cadvisor
   * Galera MySQL
   * Zookeeper
@@ -198,9 +198,10 @@ controls: true
 
 ### Data "in flight"
 
+* If containers are stopped, their volumes disappear
+  * Linked volumes allow for persistence and maintenance
 * Horizontally scaled persistence layer
 * Multiple availability zones to prevent quorum loss
-*
 
 --
 
@@ -210,6 +211,7 @@ controls: true
 * A "controller" unit could be used to orchestrate upgrades transparently
 * There is a strong need for automated orchestration "distribution"
   * Akin to the upgrade scripts in an distribution "package"
+* Waiting for a re-seed/mirror event to succeed before continuing is important
 
 --
 
