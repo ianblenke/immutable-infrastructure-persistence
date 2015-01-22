@@ -328,6 +328,7 @@ Retaining CAP quorum is critically important.
 
 ## Ian Blenke [@ianblenke](http://twitter.com/ianblenke)
 ## email: ian at blenke.com
+## work: iblenke at malwarebytes.org
 ## github.com/ianblenke
 ## ![http://goo.gl/fkHHRA](http://goo.gl/fkHHRA.qr)
 ## This presentation: http://goo.gl/fkHHRA
