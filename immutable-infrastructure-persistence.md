@@ -1,7 +1,7 @@
 title: Immutable Infrastructure Persistence
 author:
   name: Ian Blenke
-  twitter: ianblenke
+
   url: http://ianblenke.github.io/immutable-infrastructure-persistence
 output: index.html
 controls: true
@@ -52,9 +52,8 @@ controls: true
 * Partition tolerance
 
 
-* PAXOS
-* RAFT
-* GOSSIP
+* Paxos / [Raft](http://raftconsensus.github.io/) (http://raftconsensus.github.io/) / Zab / Others
+* Gossip membership
 
 --
 
@@ -64,139 +63,23 @@ controls: true
 
 --
 
-### Metal-as-a-Service (MaaS)
+### CAP Implementations used widely today
 
-* Automated bootstrapping of new hardware
-* Rack-and-stack servers
-
-![Here's our cloud](images/heresourcloud.jpg)
-
---
-
-### Infrastructure-as-a-Service (IaaS)
-
-* Cloud APIs to carve up MaaS provisioned hardware
-* Public, Private, or Hybrid
-* AWS EC2 (Eucalyptus)
-* OpenStack / Apache Cloudstack
-* GCE
-* Azure
+* Doozer (Paxos) from Heroku (orphaned?)
+* [Zookeeper](http://zookeeper.apache.org/) (Zab, only CP) from Yahoo
+* [etcd](https://github.com/coreos/etcd) (Raft + Gossip) from CoreOS
+* [Serf](https://www.serfdom.io/) (Gossip only) from Hashicorp
+* [consul](https://www.consul.io/) (Raft + Gossip) from Hashicorp, built on Serf
 
 --
 
-### Platform-as-a-Service (PaaS)
+### What is etcd?
 
-* Automated code deployment on IaaS provisioned platform
-* "Push" based deployment
-* Deployment images built on the fly from codebase
-* Containers spun up automatically from built images
-* Scale quickly in response to load
-* Rolling version deploys
+* Part of the CoreOS project
+* Written in go
+* CAP Theory key/value and membership clustering
+* Implementation of RAFT and GOSSIP
 
---
-
-### PaaS Examples
-
-* Heroku (git push, PaaS/SaaS)
-* Dokku (git push, Docker, 100 lines of Bash!)
-* Deis (git push, CoreOS/Fleet/Docker)
-* OpenShift (git push, ProjectAtomic/Geard/Docker)
-* CloudFoundry (command push, Warden and Mesos or Docker)
-* Apache Stratos (Apache Mesos)
-* Longshoreman (command push, Docker)
-* Flynn
-* Others
-
---
-
-### Heroku [12factor](http://12factor.net) Methodology
-
-* Declarative formats automate and document
-* Clean contract for containers
-* Minimize divergence
-* Scale with minimal tooling changes
-
---
-
-### Heroku deployment model
-
-* Heroku buildpacks
-  * git project auto-detection
-  * dyno "images" compiled at deploy time
-* dyno "workers" run containerized images
-* Environment variables for app settings
-
---
-
-### Docker
-
-* Images
-* Volumes
-* Ports
-* Environment variables
-* Links (NAME_TCP_5000_ADDR/NAME_TCP_5000_PORT)
-* Containers
-
---
-
-### Dokku "Contract"
-
-* Same deploy model as Heroku
-* Only 1 host
-* progrium/buildstep generated docker images
-* Very simple: 100 lines of bash
-
---
-
-### Deis "Contract"
-
-* Same deploy model as Heroku
-* etcd/systemd/fleet unit based deployment
-* deisctl orchestrates unit deployment and deis upgrades
-* deis command wraps user and application configuration
-* docker images built by deis-builder during git push
-  * progrium/buildstep generated slug wrapped in a slug runner
-  * include ENV metadata layers from application settings
-* Rolling version deployments
-* per-application memory/cpu constraints
-
---
-
-### Deis Fleet Service Units
-
-* deis-controller - django RESTful interface, coordinator
-* deis-builder - slug builder
-* deis-publisher - docker event relay
-* deis-router - nginx reverse proxy
-* deis-registry - docker private image repo
-* deis-logger - "deis logs" collector and wrapper
-* deis-database - postgresql + wal-e
-* deis-store-gateway - ceph radosgw (S3)
-* deis-store-daemon - ceph osd (storage)
-* deis-store-monitor - ceph monitor
-
---
-
-### What are Service Units?
-
-* systemd service definitions
-* .ini file like syntax
-
-### ![Automation](images/automation-small.png)
-
---
-### An example unit:
-
-    [Unit]
-    After=docker.service
-
-    [Service]
-    ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-download.service
-    ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-proxy.service
-    ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-kubelet.service
-    ExecStart=/usr/bin/bash -c "[ \"$(etcdctl get /_coreos.com/fleet/machines/$(etcdctl get /_coreos.com/fleet/lease/engine-leader)/object | sed -e 's/^.*PublicIP\\\":\\\"//' -e 's/\\\".*$//')" = \"${COREOS_PRIVATE_IPV4}\" ] && /usr/bin/fleetctl start /run/fleet/units/kubernetes-master.service && ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-controller.service"
-    RemainAfterExit=no
-    Type=oneshot
 --
 
 ### What is CoreOS?
@@ -208,17 +91,22 @@ controls: true
 * Two partition "failsafe" upgrading
 * Immutable root filesystem
 * Need a tool? Run "toolbox"
-* Everything is a container
+* Everything is a docker (or rocket) container
 * etcd / fleet / cloud-init "user-data"
 
 --
 
-### What is etcd?
+### Docker
 
-* Part of the CoreOS project
-* Written in go
-* CAP Theory key/value and membership clustering
-* Implementation of RAFT and GOSSIP
+* Immutable infrastructure, by design
+* Formalized interface for packaging/deploying
+* Layered Images / Volumes
+* Ports / Environment variables
+* Containers / Links
+
+--
+
+### ![Docker all the things!](images/docker-all-the-things.png)
 
 --
 
@@ -233,15 +121,152 @@ controls: true
 
 --
 
+### What are Service Units?
+
+* systemd service definitions
+* .ini file like syntax
+
+### ![Automation](images/automation-small.png)
+
+--
+
+### An example fleet unit:
+
+    $ fleetctl cat packetbeat
+    [Unit]
+    Description=Packetbeat Network Package Summary Metrics Service
+    Requires=docker.service
+    After=docker.service
+
+    [Service]
+    Restart=always
+    ExecStartPre=-/usr/bin/docker kill %p
+    ExecStartPre=-/usr/bin/docker rm -f %p
+    ExecStartPre=/usr/bin/docker pull ianblenke/packetbeat-agent:latest
+    ExecStart=/usr/bin/docker run --name %p --net=host -e ES_HOST=172.17.42.1 ianblenke/packetbeat-agent:latest
+    ExecStop=/usr/bin/docker stop -t 10 %p
+    ExecStop=/usr/bin/docker rm %p
+    
+    [X-Fleet]
+    Global=true
+
+--
+
 ### What is cloud-init "user-data"?
 
 * YAML file
 * Passed to CoreOS at boot time
-* Describes etcd/fleet configurations
-* Writes files
-* Defines hostname
-* Creates users
-* Defines etcd service units
+* Describes systemd units, writes files, creates users, etc.
+* _Can be used to submit fleet units for a new fleet machine member_
+  * Many examples of this in:
+    * [ianblenke/coreos-vagrant-kitchen-sink](https://github.com/ianblenke/coreos-vagrant-kitchen-sink)
+
+--
+
+### But what about Persistence?
+
+* ObjectStore: [ceph](http://ceph.com/), swift, walrus
+* Indexed JSON: [elasticsearch](http://elasticsearch.org) (lucene)
+* Time-series: [influxdb](http://influxdb.com), [OpenTSDB](http://opentsdb.net/)
+* Memory: redis, couchbase
+* Relational: galera (mysql), bigsql.org (PostgreSQL+HBase)
+* Wide column: HADOOP HBase, Spark, cassandra
+* NoSQL: couchdb, riak, mongo, ...
+
+
+--
+
+### Killing multiple birds with one stone
+
+* Deis
+  * built on CoreOS
+  * deis-store-* units for ceph
+    * mounts a cluster-wide cephfs at /var/lib/deis/store
+    * provides an S3 compatible replicated store
+  * deis-database is postgresql using wal-e to backup to ceph
+  * Provides us with a Heroku/Dokku-like PaaS
+
+--
+
+### Deis "Contract"
+
+* Same PaaS git push deploy model as Heroku/Dokku
+* etcd/systemd/fleet unit based deployment
+* deisctl orchestrates unit deployment and upgrades
+* deis command wraps user and app config
+* docker images built by deis-builder during git push
+* ENV metadata layers from "deis config:set"
+* Automated incrementing version numbers per deployment
+* Rolling version deployments
+* per-application memory/cpu constraints
+
+--
+
+### Deis Fleet Service Units
+
+* deis-controller - django RESTful interface, coordinator
+* deis-builder - slug builder
+* deis-publisher - docker event relay (populates etcd)
+* deis-router - nginx reverse proxy
+* deis-registry - docker private image repo
+* deis-logger - "deis logs" collector and wrapper
+* deis-logspout - docker log collector
+* deis-database - postgresql + wal-e
+* deis-store-gateway - ceph radosgw (S3)
+* deis-store-daemon - ceph osd (storage)
+* deis-store-monitor - ceph monitor
+
+--
+
+### My Example Fleet Units
+
+* [ianblenke/coreos-vagrant-kitchen-sink](https://github.com/ianblenke/coreos-vagrant-kitchen-sink)
+* Vagrant CoreOS with self-orchestrated:
+  * Kubernetes, Panamax, libswarm, flannel
+  * Kibana, Logstash, Logspout, PacketBeat, ElasticSearch
+  * Heapster, Grafana, Influxdb, cadvisor
+  * Galera MySQL, Zookeeper, NewRelic Host Agent
+  * Librato statsd forwarder
+  * Adding new units as I build them
+
+--
+
+### Data "in flight"
+
+* If containers are stopped, their volumes disappear
+* Linked container volumes allow for persistence
+* Horizontally scaled persistence layer
+* Multiple availability zones to _prevent quorum loss_
+* Quorum loss is devops sadness (see: ceph-mon)
+
+--
+
+### But what about upgrades?
+
+* Orchestration of upgrades is non-trivial
+* Data volumes can contain metadata to allow the docker image to detect and upgrade storage
+* A "controller" unit could be used to orchestrate upgrades transparently
+* There is a strong need for automated orchestration "distribution"
+* Waiting for a re-seed/mirror event to succeed before continuing is important
+
+--
+
+### Is this Persistence safe?
+
+* container volumes can be mounted from host
+* stopped "data" container --volumes-from
+* Docker 1.20+ --restart=always flag
+* Btrfs vs Flocker (ZFS) vs OverlayFS ...
+
+![Worked fine in dev](images/workedfineindev_opsproblemnow.jpg)
+
+--
+
+### Issues with Ceph
+
+* Require quorum of ceph-mon
+* Require &lt; 0.05+ seconds clock drift
+* Quite complex
 
 --
 
@@ -250,7 +275,7 @@ controls: true
 * Dependency on systemd. **Everyone loves systemd**
 * Fleet versions younger than 0.7.4 or so get confused as to the actual state of the units
 * Fleet versions younger than 0.8.3 have "zombie units" that cannot be killed
-* Fleet 0.9.0 is promised to "fairly" spread units based on system load
+* Fleet still doesn't fairly spread units based on load
 
 --
 
@@ -261,9 +286,10 @@ controls: true
   * **peer-heartbeat-interval: 500**
 * Next major version of etcd will allow delayed writes
 * Only 9 members will participate in leader election
-  * If more than 4 of these are lost, quorum is lost, and etcd key/value store goes read-only
+  * If more than 4 of these are lost, quorum is lost
 * Hundreds of fleet nodes will hammer the master/leaders
 * Automated node removal timer defaults to a week
+
 
 --
 
@@ -271,54 +297,8 @@ controls: true
 
 * alpha/beta/stable
 * Rapid upgrade cycles fixing issues with etcd/fleet
-* btrfs volumes "fill up" yet still show space
+* CoreOS 561+ use ext4 + OverlayFS due to problems with BTRFS
 * Upgrading coreos safely with locksmith and omaha protocol
-
---
-
-### Example Fleet Units
-
-* [ianblenke/coreos-vagrant-kitchen-sink](https://github.com/ianblenke/coreos-vagrant-kitchen-sink)
-* Vagrant CoreOS with self-orchestrated:
-  * Flannel (VPN)
-  * Kubernetes (YAML based orchestration)
-  * libswarm (Docker API reverse proxy)
-  * Panamax (YAML/web based orchestration)
-  * Kibana, Logstash, Logspout, ElasticSearch
-  * Heapster, Grafana, Influxdb, cadvisor
-  * Galera MySQL
-  * Zookeeper
-  * Many others to come
-
---
-
-### Data "in flight"
-
-* If containers are stopped, their volumes disappear
-  * Linked volumes allow for persistence and maintenance
-* Horizontally scaled persistence layer
-* Multiple availability zones to prevent quorum loss
-
---
-
-### But what about upgrades?
-
-* Data volumes can contain metadata to allow the docker image to detect and upgrade storage
-* A "controller" unit could be used to orchestrate upgrades transparently
-* There is a strong need for automated orchestration "distribution"
-  * Akin to the upgrade scripts in an distribution "package"
-* Waiting for a re-seed/mirror event to succeed before continuing is important
-
---
-
-### Is this Persistence safe?
-
-* container volumes can be mounted from underlying host
-* stopped "data" container volumes can be mounted from another
-* Docker 1.20+ --restart=always flag
-* Other experimental Docker image storage backends than AUFS and BTRFS do exist: ZFS, Hadoop, etc
-
-![Shit's on fire, yo](images/shitsonfireyo.jpg)
 
 --
 
@@ -340,12 +320,7 @@ controls: true
 
 Even with chef provisioned "always on" servers, persistence is not guaranteed, nor is it even necessary.
 
---
-
-### Related topics
-
-* Continuous Integration (CI)
-* Continuous Delivery (CD)
+Retaining CAP quorum is critically important.
 
 --
 

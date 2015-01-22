@@ -450,9 +450,8 @@ pre .chunk {
 <li>Partition tolerance</li>
 </ul>
 <ul>
-<li>PAXOS</li>
-<li>RAFT</li>
-<li>GOSSIP</li>
+<li>Paxos / <a href="http://raftconsensus.github.io/">Raft</a> (<a href="http://raftconsensus.github.io/">http://raftconsensus.github.io/</a>) / Zab / Others</li>
+<li>Gossip membership</li>
 </ul>
 </section>
   </div>
@@ -462,170 +461,17 @@ pre .chunk {
 </section>
   </div>
   <div class="slide hidden" id="slide-7">
-    <section class="slide-content"><h3 id="metal-as-a-service-maas-">Metal-as-a-Service (MaaS)</h3>
+    <section class="slide-content"><h3 id="cap-implementations-used-widely-today">CAP Implementations used widely today</h3>
 <ul>
-<li>Automated bootstrapping of new hardware</li>
-<li>Rack-and-stack servers</li>
+<li>Doozer (Paxos) from Heroku (orphaned?)</li>
+<li><a href="http://zookeeper.apache.org/">Zookeeper</a> (Zab, only CP) from Yahoo</li>
+<li><a href="https://github.com/coreos/etcd">etcd</a> (Raft + Gossip) from CoreOS</li>
+<li><a href="https://www.serfdom.io/">Serf</a> (Gossip only) from Hashicorp</li>
+<li><a href="https://www.consul.io/">consul</a> (Raft + Gossip) from Hashicorp, built on Serf</li>
 </ul>
-<p><img src="images/heresourcloud.jpg" alt="Here&#39;s our cloud"></p>
 </section>
   </div>
   <div class="slide hidden" id="slide-8">
-    <section class="slide-content"><h3 id="infrastructure-as-a-service-iaas-">Infrastructure-as-a-Service (IaaS)</h3>
-<ul>
-<li>Cloud APIs to carve up MaaS provisioned hardware</li>
-<li>Public, Private, or Hybrid</li>
-<li>AWS EC2 (Eucalyptus)</li>
-<li>OpenStack / Apache Cloudstack</li>
-<li>GCE</li>
-<li>Azure</li>
-</ul>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-9">
-    <section class="slide-content"><h3 id="platform-as-a-service-paas-">Platform-as-a-Service (PaaS)</h3>
-<ul>
-<li>Automated code deployment on IaaS provisioned platform</li>
-<li>&quot;Push&quot; based deployment</li>
-<li>Deployment images built on the fly from codebase</li>
-<li>Containers spun up automatically from built images</li>
-<li>Scale quickly in response to load</li>
-<li>Rolling version deploys</li>
-</ul>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-10">
-    <section class="slide-content"><h3 id="paas-examples">PaaS Examples</h3>
-<ul>
-<li>Heroku (git push, PaaS/SaaS)</li>
-<li>Dokku (git push, Docker, 100 lines of Bash!)</li>
-<li>Deis (git push, CoreOS/Fleet/Docker)</li>
-<li>OpenShift (git push, ProjectAtomic/Geard/Docker)</li>
-<li>CloudFoundry (command push, Warden and Mesos or Docker)</li>
-<li>Apache Stratos (Apache Mesos)</li>
-<li>Longshoreman (command push, Docker)</li>
-<li>Flynn</li>
-<li>Others</li>
-</ul>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-11">
-    <section class="slide-content"><h3 id="heroku-12factor-http-12factor-net-methodology">Heroku <a href="http://12factor.net">12factor</a> Methodology</h3>
-<ul>
-<li>Declarative formats automate and document</li>
-<li>Clean contract for containers</li>
-<li>Minimize divergence</li>
-<li>Scale with minimal tooling changes</li>
-</ul>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-12">
-    <section class="slide-content"><h3 id="heroku-deployment-model">Heroku deployment model</h3>
-<ul>
-<li>Heroku buildpacks<ul>
-<li>git project auto-detection</li>
-<li>dyno &quot;images&quot; compiled at deploy time</li>
-</ul>
-</li>
-<li>dyno &quot;workers&quot; run containerized images</li>
-<li>Environment variables for app settings</li>
-</ul>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-13">
-    <section class="slide-content"><h3 id="docker">Docker</h3>
-<ul>
-<li>Images</li>
-<li>Volumes</li>
-<li>Ports</li>
-<li>Environment variables</li>
-<li>Links (NAME_TCP_5000_ADDR/NAME_TCP_5000_PORT)</li>
-<li>Containers</li>
-</ul>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-14">
-    <section class="slide-content"><h3 id="dokku-contract-">Dokku &quot;Contract&quot;</h3>
-<ul>
-<li>Same deploy model as Heroku</li>
-<li>Only 1 host</li>
-<li>progrium/buildstep generated docker images</li>
-<li>Very simple: 100 lines of bash</li>
-</ul>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-15">
-    <section class="slide-content"><h3 id="deis-contract-">Deis &quot;Contract&quot;</h3>
-<ul>
-<li>Same deploy model as Heroku</li>
-<li>etcd/systemd/fleet unit based deployment</li>
-<li>deisctl orchestrates unit deployment and deis upgrades</li>
-<li>deis command wraps user and application configuration</li>
-<li>docker images built by deis-builder during git push<ul>
-<li>progrium/buildstep generated slug wrapped in a slug runner</li>
-<li>include ENV metadata layers from application settings</li>
-</ul>
-</li>
-<li>Rolling version deployments</li>
-<li>per-application memory/cpu constraints</li>
-</ul>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-16">
-    <section class="slide-content"><h3 id="deis-fleet-service-units">Deis Fleet Service Units</h3>
-<ul>
-<li>deis-controller - django RESTful interface, coordinator</li>
-<li>deis-builder - slug builder</li>
-<li>deis-publisher - docker event relay</li>
-<li>deis-router - nginx reverse proxy</li>
-<li>deis-registry - docker private image repo</li>
-<li>deis-logger - &quot;deis logs&quot; collector and wrapper</li>
-<li>deis-database - postgresql + wal-e</li>
-<li>deis-store-gateway - ceph radosgw (S3)</li>
-<li>deis-store-daemon - ceph osd (storage)</li>
-<li>deis-store-monitor - ceph monitor</li>
-</ul>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-17">
-    <section class="slide-content"><h3 id="what-are-service-units-">What are Service Units?</h3>
-<ul>
-<li>systemd service definitions</li>
-<li>.ini file like syntax</li>
-</ul>
-<h3 id="-automation-images-automation-small-png-"><img src="images/automation-small.png" alt="Automation"></h3>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-18">
-    <section class="slide-content"><h3 id="an-example-unit-">An example unit:</h3>
-<pre><code>[Unit]
-After=docker.service
-
-[Service]
-ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-download.service
-ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-proxy.service
-ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-kubelet.service
-ExecStart=/usr/bin/bash -c &quot;[ \&quot;$(etcdctl get /_coreos.com/fleet/machines/$(etcdctl get /_coreos.com/fleet/lease/engine-leader)/object | sed -e &#39;s/^.*PublicIP\\\&quot;:\\\&quot;//&#39; -e &#39;s/\\\&quot;.*$//&#39;)&quot; = \&quot;${COREOS_PRIVATE_IPV4}\&quot; ] &amp;&amp; /usr/bin/fleetctl start /run/fleet/units/kubernetes-master.service &amp;&amp; ExecStart=/usr/bin/fleetctl start /run/fleet/units/kubernetes-controller.service&quot;
-RemainAfterExit=no
-Type=oneshot</code></pre>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-19">
-    <section class="slide-content"><h3 id="what-is-coreos-">What is CoreOS?</h3>
-<ul>
-<li>Bare bones pre-built images</li>
-<li>Gentoo fork, no portage</li>
-<li>NO COMPILER</li>
-<li>Self-updating using locksmith and omaha protocol</li>
-<li>Two partition &quot;failsafe&quot; upgrading</li>
-<li>Immutable root filesystem</li>
-<li>Need a tool? Run &quot;toolbox&quot;</li>
-<li>Everything is a container</li>
-<li>etcd / fleet / cloud-init &quot;user-data&quot;</li>
-</ul>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-20">
     <section class="slide-content"><h3 id="what-is-etcd-">What is etcd?</h3>
 <ul>
 <li>Part of the CoreOS project</li>
@@ -635,7 +481,37 @@ Type=oneshot</code></pre>
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-21">
+  <div class="slide hidden" id="slide-9">
+    <section class="slide-content"><h3 id="what-is-coreos-">What is CoreOS?</h3>
+<ul>
+<li>Bare bones pre-built images</li>
+<li>Gentoo fork, no portage</li>
+<li>NO COMPILER</li>
+<li>Self-updating using locksmith and omaha protocol</li>
+<li>Two partition &quot;failsafe&quot; upgrading</li>
+<li>Immutable root filesystem</li>
+<li>Need a tool? Run &quot;toolbox&quot;</li>
+<li>Everything is a docker (or rocket) container</li>
+<li>etcd / fleet / cloud-init &quot;user-data&quot;</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-10">
+    <section class="slide-content"><h3 id="docker">Docker</h3>
+<ul>
+<li>Immutable infrastructure, by design</li>
+<li>Formalized interface for packaging/deploying</li>
+<li>Layered Images / Volumes</li>
+<li>Ports / Environment variables</li>
+<li>Containers / Links</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-11">
+    <section class="slide-content"><h3 id="-docker-all-the-things-images-docker-all-the-things-png-"><img src="images/docker-all-the-things.png" alt="Docker all the things!"></h3>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-12">
     <section class="slide-content"><h3 id="what-is-fleet-">What is Fleet?</h3>
 <ul>
 <li>Part of the CoreOS project</li>
@@ -647,30 +523,183 @@ Type=oneshot</code></pre>
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-22">
+  <div class="slide hidden" id="slide-13">
+    <section class="slide-content"><h3 id="what-are-service-units-">What are Service Units?</h3>
+<ul>
+<li>systemd service definitions</li>
+<li>.ini file like syntax</li>
+</ul>
+<h3 id="-automation-images-automation-small-png-"><img src="images/automation-small.png" alt="Automation"></h3>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-14">
+    <section class="slide-content"><h3 id="an-example-fleet-unit-">An example fleet unit:</h3>
+<pre><code>$ fleetctl cat packetbeat
+[Unit]
+Description=Packetbeat Network Package Summary Metrics Service
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+ExecStartPre=-/usr/bin/docker kill %p
+ExecStartPre=-/usr/bin/docker rm -f %p
+ExecStartPre=/usr/bin/docker pull ianblenke/packetbeat-agent:latest
+ExecStart=/usr/bin/docker run --name %p --net=host -e ES_HOST=172.17.42.1 ianblenke/packetbeat-agent:latest
+ExecStop=/usr/bin/docker stop -t 10 %p
+ExecStop=/usr/bin/docker rm %p
+
+[X-Fleet]
+Global=true</code></pre>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-15">
     <section class="slide-content"><h3 id="what-is-cloud-init-user-data-">What is cloud-init &quot;user-data&quot;?</h3>
 <ul>
 <li>YAML file</li>
 <li>Passed to CoreOS at boot time</li>
-<li>Describes etcd/fleet configurations</li>
-<li>Writes files</li>
-<li>Defines hostname</li>
-<li>Creates users</li>
-<li>Defines etcd service units</li>
+<li>Describes systemd units, writes files, creates users, etc.</li>
+<li><em>Can be used to submit fleet units for a new fleet machine member</em><ul>
+<li>Many examples of this in:<ul>
+<li><a href="https://github.com/ianblenke/coreos-vagrant-kitchen-sink">ianblenke/coreos-vagrant-kitchen-sink</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-16">
+    <section class="slide-content"><h3 id="but-what-about-persistence-">But what about Persistence?</h3>
+<ul>
+<li>ObjectStore: <a href="http://ceph.com/">ceph</a>, swift, walrus</li>
+<li>Indexed JSON: <a href="http://elasticsearch.org">elasticsearch</a> (lucene)</li>
+<li>Time-series: <a href="http://influxdb.com">influxdb</a>, <a href="http://opentsdb.net/">OpenTSDB</a></li>
+<li>Memory: redis, couchbase</li>
+<li>Relational: galera (mysql), bigsql.org (PostgreSQL+HBase)</li>
+<li>Wide column: HADOOP HBase, Spark, cassandra</li>
+<li>NoSQL: couchdb, riak, mongo, ...</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-17">
+    <section class="slide-content"><h3 id="killing-multiple-birds-with-one-stone">Killing multiple birds with one stone</h3>
+<ul>
+<li>Deis<ul>
+<li>built on CoreOS</li>
+<li>deis-store-* units for ceph<ul>
+<li>mounts a cluster-wide cephfs at /var/lib/deis/store</li>
+<li>provides an S3 compatible replicated store</li>
+</ul>
+</li>
+<li>deis-database is postgresql using wal-e to backup to ceph</li>
+<li>Provides us with a Heroku/Dokku-like PaaS</li>
+</ul>
+</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-18">
+    <section class="slide-content"><h3 id="deis-contract-">Deis &quot;Contract&quot;</h3>
+<ul>
+<li>Same PaaS git push deploy model as Heroku/Dokku</li>
+<li>etcd/systemd/fleet unit based deployment</li>
+<li>deisctl orchestrates unit deployment and upgrades</li>
+<li>deis command wraps user and app config</li>
+<li>docker images built by deis-builder during git push</li>
+<li>ENV metadata layers from &quot;deis config:set&quot;</li>
+<li>Automated incrementing version numbers per deployment</li>
+<li>Rolling version deployments</li>
+<li>per-application memory/cpu constraints</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-19">
+    <section class="slide-content"><h3 id="deis-fleet-service-units">Deis Fleet Service Units</h3>
+<ul>
+<li>deis-controller - django RESTful interface, coordinator</li>
+<li>deis-builder - slug builder</li>
+<li>deis-publisher - docker event relay (populates etcd)</li>
+<li>deis-router - nginx reverse proxy</li>
+<li>deis-registry - docker private image repo</li>
+<li>deis-logger - &quot;deis logs&quot; collector and wrapper</li>
+<li>deis-logspout - docker log collector</li>
+<li>deis-database - postgresql + wal-e</li>
+<li>deis-store-gateway - ceph radosgw (S3)</li>
+<li>deis-store-daemon - ceph osd (storage)</li>
+<li>deis-store-monitor - ceph monitor</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-20">
+    <section class="slide-content"><h3 id="my-example-fleet-units">My Example Fleet Units</h3>
+<ul>
+<li><a href="https://github.com/ianblenke/coreos-vagrant-kitchen-sink">ianblenke/coreos-vagrant-kitchen-sink</a></li>
+<li>Vagrant CoreOS with self-orchestrated:<ul>
+<li>Kubernetes, Panamax, libswarm, flannel</li>
+<li>Kibana, Logstash, Logspout, PacketBeat, ElasticSearch</li>
+<li>Heapster, Grafana, Influxdb, cadvisor</li>
+<li>Galera MySQL, Zookeeper, NewRelic Host Agent</li>
+<li>Librato statsd forwarder</li>
+<li>Adding new units as I build them</li>
+</ul>
+</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-21">
+    <section class="slide-content"><h3 id="data-in-flight-">Data &quot;in flight&quot;</h3>
+<ul>
+<li>If containers are stopped, their volumes disappear</li>
+<li>Linked container volumes allow for persistence</li>
+<li>Horizontally scaled persistence layer</li>
+<li>Multiple availability zones to <em>prevent quorum loss</em></li>
+<li>Quorum loss is devops sadness (see: ceph-mon)</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-22">
+    <section class="slide-content"><h3 id="but-what-about-upgrades-">But what about upgrades?</h3>
+<ul>
+<li>Orchestration of upgrades is non-trivial</li>
+<li>Data volumes can contain metadata to allow the docker image to detect and upgrade storage</li>
+<li>A &quot;controller&quot; unit could be used to orchestrate upgrades transparently</li>
+<li>There is a strong need for automated orchestration &quot;distribution&quot;</li>
+<li>Waiting for a re-seed/mirror event to succeed before continuing is important</li>
 </ul>
 </section>
   </div>
   <div class="slide hidden" id="slide-23">
+    <section class="slide-content"><h3 id="is-this-persistence-safe-">Is this Persistence safe?</h3>
+<ul>
+<li>container volumes can be mounted from host</li>
+<li>stopped &quot;data&quot; container --volumes-from</li>
+<li>Docker 1.20+ --restart=always flag</li>
+<li>Btrfs vs Flocker (ZFS) vs OverlayFS ...</li>
+</ul>
+<p><img src="images/workedfineindev_opsproblemnow.jpg" alt="Worked fine in dev"></p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-24">
+    <section class="slide-content"><h3 id="issues-with-ceph">Issues with Ceph</h3>
+<ul>
+<li>Require quorum of ceph-mon</li>
+<li>Require &lt; 0.05+ seconds clock drift</li>
+<li>Quite complex</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-25">
     <section class="slide-content"><h3 id="issues-with-fleet">Issues with Fleet</h3>
 <ul>
 <li>Dependency on systemd. <strong>Everyone loves systemd</strong></li>
 <li>Fleet versions younger than 0.7.4 or so get confused as to the actual state of the units</li>
 <li>Fleet versions younger than 0.8.3 have &quot;zombie units&quot; that cannot be killed</li>
-<li>Fleet 0.9.0 is promised to &quot;fairly&quot; spread units based on system load</li>
+<li>Fleet still doesn&#39;t fairly spread units based on load</li>
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-24">
+  <div class="slide hidden" id="slide-26">
     <section class="slide-content"><h3 id="issues-with-etcd">Issues with etcd</h3>
 <ul>
 <li>Disk latency currently causes flapping<ul>
@@ -680,7 +709,7 @@ Type=oneshot</code></pre>
 </li>
 <li>Next major version of etcd will allow delayed writes</li>
 <li>Only 9 members will participate in leader election<ul>
-<li>If more than 4 of these are lost, quorum is lost, and etcd key/value store goes read-only</li>
+<li>If more than 4 of these are lost, quorum is lost</li>
 </ul>
 </li>
 <li>Hundreds of fleet nodes will hammer the master/leaders</li>
@@ -688,72 +717,17 @@ Type=oneshot</code></pre>
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-25">
+  <div class="slide hidden" id="slide-27">
     <section class="slide-content"><h3 id="issues-with-coreos">Issues with coreos</h3>
 <ul>
 <li>alpha/beta/stable</li>
 <li>Rapid upgrade cycles fixing issues with etcd/fleet</li>
-<li>btrfs volumes &quot;fill up&quot; yet still show space</li>
+<li>CoreOS 561+ use ext4 + OverlayFS due to problems with BTRFS</li>
 <li>Upgrading coreos safely with locksmith and omaha protocol</li>
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-26">
-    <section class="slide-content"><h3 id="example-fleet-units">Example Fleet Units</h3>
-<ul>
-<li><a href="https://github.com/ianblenke/coreos-vagrant-kitchen-sink">ianblenke/coreos-vagrant-kitchen-sink</a></li>
-<li>Vagrant CoreOS with self-orchestrated:<ul>
-<li>Flannel (VPN)</li>
-<li>Kubernetes (YAML based orchestration)</li>
-<li>libswarm (Docker API reverse proxy)</li>
-<li>Panamax (YAML/web based orchestration)</li>
-<li>Kibana, Logstash, Logspout, ElasticSearch</li>
-<li>Heapster, Grafana, Influxdb, cadvisor</li>
-<li>Galera MySQL</li>
-<li>Zookeeper</li>
-<li>Many others to come</li>
-</ul>
-</li>
-</ul>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-27">
-    <section class="slide-content"><h3 id="data-in-flight-">Data &quot;in flight&quot;</h3>
-<ul>
-<li>If containers are stopped, their volumes disappear<ul>
-<li>Linked volumes allow for persistence and maintenance</li>
-</ul>
-</li>
-<li>Horizontally scaled persistence layer</li>
-<li>Multiple availability zones to prevent quorum loss</li>
-</ul>
-</section>
-  </div>
   <div class="slide hidden" id="slide-28">
-    <section class="slide-content"><h3 id="but-what-about-upgrades-">But what about upgrades?</h3>
-<ul>
-<li>Data volumes can contain metadata to allow the docker image to detect and upgrade storage</li>
-<li>A &quot;controller&quot; unit could be used to orchestrate upgrades transparently</li>
-<li>There is a strong need for automated orchestration &quot;distribution&quot;<ul>
-<li>Akin to the upgrade scripts in an distribution &quot;package&quot;</li>
-</ul>
-</li>
-<li>Waiting for a re-seed/mirror event to succeed before continuing is important</li>
-</ul>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-29">
-    <section class="slide-content"><h3 id="is-this-persistence-safe-">Is this Persistence safe?</h3>
-<ul>
-<li>container volumes can be mounted from underlying host</li>
-<li>stopped &quot;data&quot; container volumes can be mounted from another</li>
-<li>Docker 1.20+ --restart=always flag</li>
-<li>Other experimental Docker image storage backends than AUFS and BTRFS do exist: ZFS, Hadoop, etc</li>
-</ul>
-<p><img src="images/shitsonfireyo.jpg" alt="Shit&#39;s on fire, yo"></p>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-30">
     <section class="slide-content"><h3 id="other-risks">Other risks</h3>
 <ul>
 <li>Docker 172.17.42.0/24 &quot;hides&quot; containers between hosts (Flannel addresses this with a VPN)</li>
@@ -766,7 +740,7 @@ Type=oneshot</code></pre>
 </ul>
 </section>
   </div>
-  <div class="slide hidden" id="slide-31">
+  <div class="slide hidden" id="slide-29">
     <section class="slide-content"><h3 id="real-world-example">Real world example</h3>
 <ul>
 <li>Chef provisioned i2.8xlarge postgres instances on 8 SSD <strong>ephemeral</strong> (not EBS+PIOPs!) disk RAID-10 arrays</li>
@@ -774,17 +748,10 @@ Type=oneshot</code></pre>
 <li>The actual persistence safety provided by daily wal-e full backups and streaming wal-e archives to S3 storage</li>
 </ul>
 <p>Even with chef provisioned &quot;always on&quot; servers, persistence is not guaranteed, nor is it even necessary.</p>
+<p>Retaining CAP quorum is critically important.</p>
 </section>
   </div>
-  <div class="slide hidden" id="slide-32">
-    <section class="slide-content"><h3 id="related-topics">Related topics</h3>
-<ul>
-<li>Continuous Integration (CI)</li>
-<li>Continuous Delivery (CD)</li>
-</ul>
-</section>
-  </div>
-  <div class="slide hidden" id="slide-33">
+  <div class="slide hidden" id="slide-30">
     <section class="slide-content"><h3 id="any-questions-comments-">Any questions? Comments?</h3>
 <h2 id="ian-blenke-ianblenke-http-twitter-com-ianblenke-">Ian Blenke <a href="http://twitter.com/ianblenke">@ianblenke</a></h2>
 <h2 id="email-ian-at-blenke-com">email: ian at blenke.com</h2>
@@ -793,12 +760,9 @@ Type=oneshot</code></pre>
 <h2 id="this-presentation-http-goo-gl-fkhhra">This presentation: <a href="http://goo.gl/fkHHRA">http://goo.gl/fkHHRA</a></h2>
 </section>
   </div>
-  <div class="slide hidden" id="slide-34">
+  <div class="slide hidden" id="slide-31">
     <section class="slide-content"><div class="author">
   <h1 class="name">Ian Blenke</h1>
-    <h3 class="twitter">
-      <a href="http://twitter.com/@ianblenke">@ianblenke</a>
-    </h3>
     <h3 class="url">
       <a href="http://ianblenke.github.io/immutable-infrastructure-persistence">http://ianblenke.github.io/immutable-infrastructure-persistence</a>
     </h3>
